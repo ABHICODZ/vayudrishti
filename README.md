@@ -1,20 +1,33 @@
-# Breath-Analyzer (Vayu Drishti)
+<div align="center">
 
-![Vayu Drishti Banner](https://img.shields.io/badge/Vayu%20Drishti-AI%20Spatial%20AQI%20Interpolation-brightgreen?style=for-the-badge) ![PyTorch](https://img.shields.io/badge/PyTorch-%23EE4C2C.svg?style=for-the-badge&logo=PyTorch&logoColor=white) 
+# 🌬️ Breath-Analyzer (Vayu Drishti)
+**AI-Powered Spatial AQI Interpolation for Micro-climate Prediction**
 
-Vayu Drishti is an AI-powered spatial interpolation system designed to accurately predict PM2.5 concentrations (the core metric for the Air Quality Index) across Delhi, India. Using a custom PyTorch Deep Neural Network architecture (`TemporalSpatialNet`), it learns complex, non-linear relationships between geographic locations and chemical pollutant levels.
+[![Vayu Drishti Banner](https://img.shields.io/badge/Vayu%20Drishti-AI%20Spatial%20AQI%20Interpolation-brightgreen?style=for-the-badge)](https://github.com/)
+[![PyTorch](https://img.shields.io/badge/PyTorch-%23EE4C2C.svg?style=for-the-badge&logo=PyTorch&logoColor=white)](https://pytorch.org/) 
+[![Python 3.8+](https://img.shields.io/badge/python-3.8+-blue.svg?style=for-the-badge&logo=python&logoColor=white)](https://www.python.org/)
 
-## 🚀 Features
+*Accurately predict PM2.5 concentrations across Delhi using a custom PyTorch Deep Neural Network.*
 
-- **Deep Learning Architecture:** Utilizes a highly optimized, fully connected Neural Network with Batch Normalization, Dropout, and SiLU (Swish) activations for robust regression.
-- **Micro-climate Prediction:** Extrapolates PM2.5 levels for unmonitored locations using data from nearby Central Pollution Control Board (CPCB) monitoring stations.
-- **Multivariate Input Space:** Analyzes 7 key features:
-  - **Spatial:** Latitude, Longitude, Distance from Delhi Base Center.
-  - **Chemical:** Exact measurements of SO2, NO2, PM10, and CO (ppb).
-- **Automated Data Pipeline:** Cleanses uncalibrated datasets by replacing missing values, standardizing variations, and removing hardware anomalies (such as PM2.5 > 500 µg/m³).
-- **Robust Loss Metric:** Tuned with Huber Loss (delta=10.0) mapping closely to skewed PM2.5 distributions, surpassing standard MSE performance.
+</div>
 
-## 📂 Project Structure
+---
+
+## 📌 Executive Summary
+
+**Vayu Drishti** is an advanced AI intelligence layer that brings spatial interpolation to Air Quality measurements. Rather than relying solely on sparsely distributed hardware sensors, it utilizes a custom PyTorch Deep Neural Network (`TemporalSpatialNet`) to extrapolate pollutant metrics precisely for unmonitored locations. By analyzing the non-linear relationship between geographic coordinates and chemical data sourced from nearby Central Pollution Control Board (CPCB) stations, Vayu Drishti accurately predicts PM2.5 levels down to the micro-climate scale.
+
+## 🚀 Key Features
+
+- **🧠 Deep Learning Engine:** Employs a fully-connected Neural Net utilizing Batch Normalization, Dropout, and SiLU (Swish) activations for robust non-linear regression.
+- **📍 Micro-climate Interpolation:** Predicts localized PM2.5 concentrations in urban dead zones accurately.
+- **🧬 Multivariate Analytics:** Processes 7 independent variables:
+  - **Spatial Data:** Latitude, Longitude, Distance from Base Center.
+  - **Chemical Data:** SO2, NO2, PM10, and CO (ppb) measurements.
+- **⚙️ Automated Data Pipeline:** Automatically cleanses datasets by handling missing values, scaling anomalies, and rejecting hardware failure artifacts (>500 µg/m³ PM2.5).
+- **🎯 Highly Tuned Loss Metric:** Utilizes Huber Loss (delta=10.0) mapping to address heavily skewed real-world air pollution distributions gracefully.
+
+## 📂 Project Architecture
 
 ```text
 Breath-Analyzser/
@@ -26,50 +39,53 @@ Breath-Analyzser/
 └── README.md                            # Comprehensive project documentation
 ```
 
-> **Note:** Due to size constraints, the `.csv` datasets and cached folders have been excluded from the submission repository.
+> **Note:** Due to GitHub size constraints, `.csv` datasets and cached build artifacts have been purposefully excluded from this repository.
 
-## 🛠️ Requirements & Setup
+## 🛠️ Environment Setup
 
-Ensure you have Python 3.8+ installed. You can install the required dependencies using pip.
+Ensure you have **Python 3.8+** installed before proceeding.
 
-```bash
-pip install torch numpy pandas scikit-learn
-```
+1. **Install Dependencies:**
+   ```bash
+   pip install torch numpy pandas scikit-learn
+   ```
+2. *(Optional)* **GPU Acceleration:** `train_vayu_v2.py` automatically detects hardware and routes tensor operations to CUDA/GPU architectures if available (ideal for Google Colab/RTX instances).
 
-If utilizing Google Colab, you can upload `train_vayu_v2.py` in your environment — the script automatically detects and utilizes GPU/CUDA resources if available.
+## 📊 Dataset Ingestion
 
-## 📊 Dataset Requirement
-
-To launch the model training locally, create a `dataset_extracted` directory inside `backend/` and place the required real-world data inside:
+To train the model natively, provision the dataset files inside `backend/dataset_extracted/`:
 
 1. `delhi_aqi.csv`
 2. `final_dataset.csv`
 
-*(If certain columns aren't found, the pipeline gracefully handles them or attempts fallback mappings).*
+The data ingestion pipeline provides fallbacks, gracefully handling common dataset variations.
 
-## ⚙️ Running the Model
+## ⚙️ Model Training & Execution
 
-Navigate to the `backend` folder and run the script:
+Initiate model training through the backend working directory:
 
 ```bash
 cd backend
 python train_vayu_v2.py
 ```
 
-### Outputs generated:
-1. **`vayu_spatial_PRODUCTION.pt`**: The trained PyTorch model weights state dictionary. 
-2. **`vayu_scaler.pkl`**: The standard feature scaler mapping feature scales (needed during real-time inference in production).
+### 📦 Artifacts Generated:
+- `vayu_spatial_PRODUCTION.pt`: The compiled and tuned PyTorch model weights state dictionary.
+- `vayu_scaler.pkl`: The feature standard scaler required during the real-time inference pipeline to match standardized inputs.
 
-## 🧠 Model Architecture
+## 🧠 Neural Architecture Details
 
-The `TemporalSpatialNet` is defined as follows:
+**TemporalSpatialNet Topology:**
+- **Input Layer:** 7 Source Nodes 
+- **Hidden Layer 1:** 256 Nodes → `BatchNorm1d` → `SiLU` → `Dropout(0.25)`
+- **Hidden Layer 2:** 128 Nodes → `BatchNorm1d` → `SiLU` → `Dropout(0.15)`
+- **Hidden Layer 3:** 64 Nodes → `SiLU`
+- **Output Layer:** 1 Regression Node (Predicted PM2.5 in µg/m³)
 
-- **Input Layer:** 7 Nodes 
-- **Hidden Layer 1:** 256 Nodes → BatchNorm1d → SiLU → Dropout (0.25)
-- **Hidden Layer 2:** 128 Nodes → BatchNorm1d → SiLU → Dropout (0.15)
-- **Hidden Layer 3:** 64 Nodes → SiLU
-- **Output Layer:** 1 Node (Predicted PM2.5 in µg/m³)
+## 🤝 Validation & Benchmarking
 
-## 🤝 Validation
+The system automatically extracts an `85/15` Training-to-Validation split dynamic subset during pipeline execution. Real vs. Predicted PM2.5 scores are actively visualized in terminal output post-training for rapid regression validation. 
 
-During training, the application dynamically breaks the dataset down into an active `85/15` Training-to-Validation split. Real vs Predicted PM2.5 checks will be automatically visualized on terminal output post-training for immediate validation checks.
+<div align="center">
+  <i>Built to democratize clean air transparency.</i>
+</div>
