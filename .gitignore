@@ -208,3 +208,6 @@ web-frontend/convert_kml.js
 .idea/
 .DS_Store
 Thumbs.db
+
+# Large graph files
+*.graphml
