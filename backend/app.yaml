@@ -1,0 +1,19 @@
+runtime: python311
+
+instance_class: F2
+
+env_variables:
+  WAQI_TOKEN: "9abbe99f4595fa8a4d20dd26a06db8e375273034"
+  GCP_PROJECT_ID: "gee-data-490807"
+  GCP_LOCATION: "us-central1"
+  SUPABASE_URL: "https://tmavkmymbdcmugunjtle.supabase.co"
+  SUPABASE_KEY: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRtYXZrbXltYmRjbXVndW5qdGxlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQwMzAyMDYsImV4cCI6MjA4OTYwNjIwNn0.BEr2krViE54HjVtmm-WD6KV7cIcDQMOSmM-VyjiH7cY"
+  VITE_SUPABASE_URL: "https://tmavkmymbdcmugunjtle.supabase.co"
+  VITE_SUPABASE_ANON_KEY: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRtYXZrbXltYmRjbXVndW5qdGxlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQwMzAyMDYsImV4cCI6MjA4OTYwNjIwNn0.BEr2krViE54HjVtmm-WD6KV7cIcDQMOSmM-VyjiH7cY"
+
+entrypoint: uvicorn app.main:app --host 0.0.0.0 --port $PORT
+
+automatic_scaling:
+  min_instances: 1
+  max_instances: 10
+  target_cpu_utilization: 0.65

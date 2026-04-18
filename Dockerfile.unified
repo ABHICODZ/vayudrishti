@@ -1,0 +1,54 @@
+# Multi-stage build for unified deployment
+# Stage 1: Build Frontend
+FROM node:18-alpine as frontend-build
+
+WORKDIR /frontend
+
+# Build arguments for environment variables
+ARG VITE_API_URL=/api/v1
+ARG VITE_SUPABASE_URL=https://tmavkmymbdcmugunjtle.supabase.co
+ARG VITE_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRtYXZrbXltYmRjbXVndW5qdGxlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQwMzAyMDYsImV4cCI6MjA4OTYwNjIwNn0.BEr2krViE54HjVtmm-WD6KV7cIcDQMOSmM-VyjiH7cY
+
+# Set environment variables
+ENV VITE_API_URL=$VITE_API_URL
+ENV VITE_SUPABASE_URL=$VITE_SUPABASE_URL
+ENV VITE_SUPABASE_ANON_KEY=$VITE_SUPABASE_ANON_KEY
+
+# Copy frontend files
+COPY web-frontend/package*.json ./
+RUN npm ci --legacy-peer-deps
+
+COPY web-frontend/ ./
+RUN npm run build
+
+# Stage 2: Build Backend with Frontend
+FROM python:3.11-slim
+
+WORKDIR /app
+
+# Install system dependencies
+RUN apt-get update && apt-get install -y \
+    gcc \
+    g++ \
+    curl \
+    && rm -rf /var/lib/apt/lists/*
+
+# Copy backend requirements
+COPY backend/requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Copy backend code
+COPY backend/ .
+
+# Copy built frontend to backend static directory
+COPY --from=frontend-build /frontend/dist ./static
+
+# Expose port
+EXPOSE 8080
+
+# Set environment variables
+ENV PYTHONUNBUFFERED=1
+ENV PORT=8080
+
+# Run the application
+CMD uvicorn app.main:app --host 0.0.0.0 --port $PORT
