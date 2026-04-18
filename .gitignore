@@ -1,0 +1,39 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.env
+.env
+*.pkl
+*.pt
+*.pth
+venv/
+.venv/
+env/
+
+# Datasets (too large for git)
+dataset_extracted/
+*.csv
+*.xlsx
+*.zip
+
+# Logs & debug
+*.log
+*.txt
+diag_output.txt
+out.txt
+
+# Node / Frontend
+node_modules/
+dist/
+build/
+.npmrc
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
