@@ -1,6 +1,10 @@
 from pydantic_settings import BaseSettings
 import os
 
+# Clean up any trailing newlines or whitespace from environment variables (e.g. from copy-paste in secrets)
+for k, v in list(os.environ.items()):
+    os.environ[k] = v.strip()
+
 class Settings(BaseSettings):
     PROJECT_NAME: str = "Breath-Analyzer API"
     VERSION: str = "0.1.0"

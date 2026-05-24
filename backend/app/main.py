@@ -4,6 +4,10 @@ import re
 import time
 import pathlib
 
+# Clean up any trailing newlines or whitespace from environment variables (e.g. from copy-paste in secrets)
+for k, v in list(os.environ.items()):
+    os.environ[k] = v.strip()
+
 # Globally configure Google Application Default Credentials to use our Backend Service Account
 credentials_path = os.path.join(os.path.dirname(__file__), "services", "ee-credentials.json")
 if os.path.exists(credentials_path):
