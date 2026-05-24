@@ -1,5 +1,6 @@
 from dotenv import load_dotenv; load_dotenv()
 import os
+import re
 import time
 import pathlib
 
@@ -27,13 +28,38 @@ def create_app() -> FastAPI:
         openapi_url=f"{settings.API_V1_STR}/openapi.json"
     )
 
-    # CORS — restricted to explicit origins in production
+    # CORS — restricted to explicit origins in production with wildcard support
     cors_origins_env = os.getenv("CORS_ORIGINS", "")
-    allowed_origins = [o.strip() for o in cors_origins_env.split(",") if o.strip()] if cors_origins_env else ["*"]
+    origins_list = [o.strip() for o in cors_origins_env.split(",") if o.strip()] if cors_origins_env else []
+    
+    allowed_origins = []
+    allowed_origin_regex = None
+    allow_credentials = True
+    
+    if not origins_list:
+        allowed_origins = ["*"]
+        allow_credentials = False
+    else:
+        allowed_origin_regexes = []
+        for origin in origins_list:
+            if origin == "*":
+                allowed_origins = ["*"]
+                allow_credentials = False
+                break
+            elif "*" in origin:
+                escaped = re.escape(origin).replace(r"\*", ".*")
+                allowed_origin_regexes.append(f"^{escaped}$")
+            else:
+                allowed_origins.append(origin)
+        
+        if allowed_origin_regexes:
+            allowed_origin_regex = "|".join(allowed_origin_regexes)
+
     app.add_middleware(
         CORSMiddleware,
         allow_origins=allowed_origins,
-        allow_credentials=True,
+        allow_origin_regex=allowed_origin_regex,
+        allow_credentials=allow_credentials,
         allow_methods=["*"],
         allow_headers=["*"],
     )
