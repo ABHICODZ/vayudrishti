@@ -5,3 +5,7 @@ __pycache__/
 ENV/
 venv/
 *.sqlite3
+
+# GCP Service Account credentials — NEVER commit these
+app/services/ee-credentials.json
+scripts/ee-credentials.json.json

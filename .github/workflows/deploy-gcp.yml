@@ -1,0 +1,99 @@
+name: Deploy Backend to GCP Cloud Run
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'backend/**'
+      - '.github/workflows/deploy-gcp.yml'
+  workflow_dispatch:  # Allow manual trigger from GitHub UI
+
+env:
+  PROJECT_ID: gee-data-490807
+  REGION: us-central1
+  SERVICE_NAME: vayudrishti-backend
+  REGISTRY: us-central1-docker.pkg.dev
+
+jobs:
+  deploy:
+    name: Build & Deploy to Cloud Run
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write  # Required for Workload Identity Federation
+
+    steps:
+      # ── 1. Checkout code ─────────────────────────────────────────────────
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # ── 2. Authenticate to GCP ───────────────────────────────────────────
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.GCP_SA_KEY }}
+
+      # ── 3. Set up gcloud CLI ─────────────────────────────────────────────
+      - name: Set up Cloud SDK
+        uses: google-github-actions/setup-gcloud@v2
+        with:
+          project_id: ${{ env.PROJECT_ID }}
+
+      # ── 4. Write credentials file into the build context ─────────────────
+      - name: Write GCP credentials file
+        run: |
+          mkdir -p backend/app/services
+          echo '${{ secrets.GCP_SA_KEY }}' > backend/app/services/ee-credentials.json
+
+      # ── 5. Configure Docker to use gcloud as a credential helper ─────────
+      - name: Configure Docker for Artifact Registry
+        run: gcloud auth configure-docker ${{ env.REGISTRY }} --quiet
+
+      # ── 6. Build and push Docker image ───────────────────────────────────
+      - name: Build and push Docker image
+        run: |
+          IMAGE="${{ env.REGISTRY }}/${{ env.PROJECT_ID }}/cloud-run-source-deploy/${{ env.SERVICE_NAME }}:${{ github.sha }}"
+          docker build \
+            --tag "$IMAGE" \
+            --tag "${{ env.REGISTRY }}/${{ env.PROJECT_ID }}/cloud-run-source-deploy/${{ env.SERVICE_NAME }}:latest" \
+            ./backend
+          docker push "$IMAGE"
+          docker push "${{ env.REGISTRY }}/${{ env.PROJECT_ID }}/cloud-run-source-deploy/${{ env.SERVICE_NAME }}:latest"
+          echo "IMAGE=$IMAGE" >> $GITHUB_ENV
+
+      # ── 7. Deploy to Cloud Run ────────────────────────────────────────────
+      - name: Deploy to Cloud Run
+        run: |
+          gcloud run deploy ${{ env.SERVICE_NAME }} \
+            --image "$IMAGE" \
+            --region ${{ env.REGION }} \
+            --platform managed \
+            --allow-unauthenticated \
+            --memory 2Gi \
+            --cpu 2 \
+            --timeout 300 \
+            --max-instances 5 \
+            --min-instances 0 \
+            --port 8080 \
+            --set-env-vars "GCP_PROJECT_ID=${{ env.PROJECT_ID }}" \
+            --set-env-vars "GCP_LOCATION=${{ env.REGION }}" \
+            --set-env-vars "WAQI_TOKEN=${{ secrets.WAQI_TOKEN }}" \
+            --set-env-vars "SUPABASE_URL=${{ secrets.SUPABASE_URL }}" \
+            --set-env-vars "SUPABASE_KEY=${{ secrets.SUPABASE_KEY }}" \
+            --set-env-vars "CORS_ORIGINS=https://vayudrishti.vercel.app,https://*.vercel.app"
+
+      # ── 8. Get deployed URL and print it ─────────────────────────────────
+      - name: Get Cloud Run URL
+        run: |
+          URL=$(gcloud run services describe ${{ env.SERVICE_NAME }} \
+            --region ${{ env.REGION }} \
+            --format 'value(status.url)')
+          echo "✅ Deployed! Backend URL: $URL"
+          echo "BACKEND_URL=$URL" >> $GITHUB_STEP_SUMMARY
+          echo "## Deployment Complete 🚀" >> $GITHUB_STEP_SUMMARY
+          echo "**Backend URL:** $URL" >> $GITHUB_STEP_SUMMARY
+          echo "**Health Check:** $URL/health" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Set this in Vercel:" >> $GITHUB_STEP_SUMMARY
+          echo "\`VITE_API_URL=$URL\`" >> $GITHUB_STEP_SUMMARY
