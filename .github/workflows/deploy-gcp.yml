@@ -81,7 +81,7 @@ jobs:
             --set-env-vars "WAQI_TOKEN=${{ secrets.WAQI_TOKEN }}" \
             --set-env-vars "SUPABASE_URL=${{ secrets.SUPABASE_URL }}" \
             --set-env-vars "SUPABASE_KEY=${{ secrets.SUPABASE_KEY }}" \
-            --set-env-vars 'CORS_ORIGINS=https://vayudrishti.vercel.app\,https://*.vercel.app'
+            --set-env-vars "^;^CORS_ORIGINS=https://vayudrishti.vercel.app,https://*.vercel.app"
 
       # ── 8. Get deployed URL and print it ─────────────────────────────────
       - name: Get Cloud Run URL
