@@ -37,9 +37,10 @@ FROM python:3.11-slim
 # Install only runtime system deps
 RUN apt-get update && apt-get install -y --no-install-recommends \
     curl \
-    libgdal32 \
-    libgeos-c1v5 \
-    libproj25 \
+    gdal-bin \
+    libgdal-dev \
+    libgeos-dev \
+    libproj-dev \
     libpq5 \
     && rm -rf /var/lib/apt/lists/*
 

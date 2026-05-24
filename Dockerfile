@@ -29,9 +29,9 @@ FROM python:3.11-slim
 # Install only runtime dependencies
 RUN apt-get update && apt-get install -y --no-install-recommends \
     gdal-bin \
-    libgdal33 \
-    libgeos-c1v5 \
-    libproj25 \
+    libgdal-dev \
+    libgeos-dev \
+    libproj-dev \
     libpq5 \
     && rm -rf /var/lib/apt/lists/*
 
